@@ -203,7 +203,7 @@ def training():
     dataset_sizes, device, class_names, dataloaders = load_image()
     model_ft = pretrain_model_train(
         class_names, dataset_sizes, dataloaders, device)
-    torch.save(model_ft.state_dict(), '../model.pkl')
+    torch.save(model_ft.state_dict(), './../model.pkl')
 
     #inputs, classes = next(iter(dataloaders['training']))
     #out = torchvision.utils.make_grid(inputs)
