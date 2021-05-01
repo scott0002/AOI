@@ -19,10 +19,11 @@ def run_test():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  
     data_transforms = {
         'evaluation': transforms.Compose([
+            transforms.ToPILImage(),
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize([0.485, ], [0.229, ])
         ]),
     }
     img_dir = "./aoi/test_images"
@@ -41,7 +42,7 @@ def run_test():
     for idx in range(len(img_labels)):
         img_path = os.path.join(img_dir, img_labels.iloc[idx, 0])
         image = read_image(img_path)
-        inputs = data_transforms['evaluation'](image)
+        inputs = data_transforms['evaluation'](image.repeat(3, 1, 1))
         outputs = model(inputs)
         _, pred = torch.max(outputs, 1)
         predict.append(pred)
