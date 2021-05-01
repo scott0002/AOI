@@ -27,8 +27,10 @@ class CustomImageDataset():
         return len(self.img_labels)
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        # print(img_path)
         image = read_image(img_path)
         label = self.img_labels.iloc[idx, 1]
+        label = int(label)
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
