@@ -13,7 +13,8 @@ import os
 import copy
 import pandas as pd
 from torchvision.io import read_image
-import dataloader.CustomImageDataset as dataloader
+from  dataloader import CustomImageDataset as dataloader
+from dataloader import DatasetFromSubset
 plt.ion()   # interactive mode
 
 def load_model():
@@ -45,14 +46,16 @@ def load_image():
     train_set_size = int(len(dataset) * 0.8)
     valid_set_size = len(dataset) - train_set_size
     train_set, valid_set = data.random_split(dataset, [train_set_size, valid_set_size])
-    image_datasets = {'training': data_transforms['training'](train_set), 'development':valid_set}
+
+    image_datasets = {'training': DatasetFromSubset(train_set,data_transforms['training'])
+        , 'development': DatasetFromSubset(valid_set,data_transforms['development'])}
     
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                                 shuffle=True, num_workers=4)
                 for x in ['training', 'development']}
     dataset_sizes = {x: len(image_datasets[x]) for x in ['training', 'development']}
-    class_names = image_datasets['training'].classes
-    print(class_names)
+    class_names = [0,1,2,3,4,5]
+    # print(class_names)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")    
     return dataset_sizes, device, class_names, dataloaders
 
