@@ -42,7 +42,7 @@ def run_test():
     for idx in range(len(img_labels)):
         img_path = os.path.join(img_dir, img_labels.iloc[idx, 0])
         image = read_image(img_path)
-        inputs = data_transforms['evaluation'](image.repeat(3, 1, 1))
+        inputs = data_transforms['evaluation'](image.repeat(3, 1, 1)).unsqueeze(0).to(device)
         outputs = model(inputs)
         _, pred = torch.max(outputs, 1)
         predict.append(pred)
