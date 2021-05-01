@@ -36,13 +36,17 @@ def load_image():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
+    # create dataloader
     data_dir = "../aoi/train_images"
     annotations_file_path = "../aoi/train.csv"
     dataset = dataloader(annotations_file_path,data_dir,data_transforms[x])
+    
+    # split dataset into train & dev
     train_set_size = int(len(dataset) * 0.8)
     valid_set_size = len(dataset) - train_set_size
     train_set, valid_set = data.random_split(dataset, [train_set_size, valid_set_size])
     image_datasets = {'training': train_set, 'development':valid_set}
+    
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                                 shuffle=True, num_workers=4)
                 for x in ['training', 'development']}
