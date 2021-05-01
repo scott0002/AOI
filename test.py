@@ -25,7 +25,7 @@ def run_test():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    img_dir = "../aoi/test_images"
+    img_dir = "./aoi/test_images"
     model = models.resnet18(pretrained=True)
     num_ftrs = model.fc.in_features
     # Here the size of each output sample is set to 2.
@@ -33,11 +33,11 @@ def run_test():
     model.fc = nn.Linear(num_ftrs, 6)
 
     
-    model.load_state_dict(torch.load('model.pkl'))
+    model.load_state_dict(torch.load('./model.pkl'))
     model = model.to(device)
     #phase=['evalution']
     predict = []
-    img_labels = pd.read_csv("../aoi/test.csv")
+    img_labels = pd.read_csv("./aoi/test.csv")
     for idx in range(len(img_labels)):
         img_path = os.path.join(img_dir, img_labels.iloc[idx, 0])
         image = read_image(img_path)
@@ -47,7 +47,7 @@ def run_test():
         predict.append(pred)
     submit = pd.DataFrame({'ID': img_labels.iloc[:, 0],
                             'Label': predict})
-    submit.to_csv("../aoi/submit.csv",
+    submit.to_csv("./aoi/submit.csv",
                     header=True,
                     sep=',',
                     encoding='utf-8',
