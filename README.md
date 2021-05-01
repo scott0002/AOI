@@ -1,5 +1,5 @@
 # Face-Spoof-Detect
-Face Spoof Detect project implemented by Python. It's final project in Programming Language Course.
+Automated Optical Inspection implemented by Python. It's assignment 2 in Introduction to Deep Learning Course.
 ## Train
 #### Download LCC_FASD, and preprocessing.
     cd training
