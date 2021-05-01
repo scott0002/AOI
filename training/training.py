@@ -38,8 +38,8 @@ def load_image():
         ]),
     }
     # create dataloader
-    data_dir = "../aoi/train_images"
-    annotations_file_path = "../aoi/train.csv"
+    data_dir = "..\\aoi\\train_images"
+    annotations_file_path = "..\\aoi\\train.csv"
     dataset = dataloader(annotations_file_path,data_dir)
     
     # split dataset into train & dev
