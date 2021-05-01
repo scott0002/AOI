@@ -178,7 +178,8 @@ def visualize_model(inp, device, class_names, dataloaders, model, num_images=6, 
 
 
 def pretrain_model_train(class_names, dataset_sizes, dataloaders, device):
-    model_ft = models.resnet18(pretrained=True)
+    # model_ft = models.resnet18(pretrained=True)
+    model_ft = load_model()
     num_ftrs = model_ft.fc.in_features
     # Here the size of each output sample is set to 2.
     # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
