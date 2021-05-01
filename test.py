@@ -45,7 +45,8 @@ def run_test():
         inputs = data_transforms['evaluation'](image.repeat(3, 1, 1)).unsqueeze(0).to(device)
         outputs = model(inputs)
         _, pred = torch.max(outputs, 1)
-        predict.append(pred)
+        # print(int(pred[0]))
+        predict.append(int(pred[0]))
     submit = pd.DataFrame({'ID': img_labels.iloc[:, 0],
                             'Label': predict})
     submit.to_csv("./aoi/submit.csv",
