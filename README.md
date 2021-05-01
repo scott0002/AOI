@@ -1,4 +1,4 @@
-# Face-Spoof-Detect
+# Automated Optical Inspection
 Automated Optical Inspection implemented by Python. It's assignment 2 in Introduction to Deep Learning Course.
 ## Train
 #### Download LCC_FASD, and preprocessing.
