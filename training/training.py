@@ -1,5 +1,5 @@
-from __future__ import print_function, division
-
+from __future__ import annotations, print_function, division
+import torch.utils.data as data
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -13,6 +13,7 @@ import os
 import copy
 import pandas as pd
 from torchvision.io import read_image
+import dataloader.CustomImageDataset as dataloader
 plt.ion()   # interactive mode
 
 def load_model():
@@ -35,10 +36,13 @@ def load_image():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    data_dir = "..\aoi\train_images"
-    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
-                                            data_transforms[x])
-                    for x in ['training', 'development']}
+    data_dir = "../aoi/train_images"
+    annotations_file_path = "../aoi/train.csv"
+    dataset = dataloader(annotations_file_path,data_dir,data_transforms[x])
+    train_set_size = int(len(dataset) * 0.8)
+    valid_set_size = len(dataset) - train_set_size
+    train_set, valid_set = data.random_split(dataset, [train_set_size, valid_set_size])
+    image_datasets = {'training': train_set, 'development':valid_set}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                                 shuffle=True, num_workers=4)
                 for x in ['training', 'development']}
