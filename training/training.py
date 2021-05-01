@@ -13,51 +13,59 @@ import os
 import copy
 import pandas as pd
 from torchvision.io import read_image
-from  dataloader import CustomImageDataset as dataloader
+from dataloader import CustomImageDataset as dataloader
 from dataloader import DatasetFromSubset
 plt.ion()   # interactive mode
 
+
 def load_model():
-    model = torch.hub.load('pytorch/vision:v0.6.0', 'googlenet', pretrained=True)
+    model = torch.hub.load('pytorch/vision:v0.6.0',
+                           'googlenet', pretrained=True)
     model.eval()
     return model
+
 
 def load_image():
     data_transforms = {
         'training': transforms.Compose([
+            transforms.ToPILImage(),
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize([0.485, ], [0.229, ])
         ]),
         'development': transforms.Compose([
+            transforms.ToPILImage(),
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize([0.485, ], [0.229, ])
         ]),
     }
     # create dataloader
     data_dir = "..\\aoi\\train_images"
     annotations_file_path = "..\\aoi\\train.csv"
-    dataset = dataloader(annotations_file_path,data_dir)
-    
+    dataset = dataloader(annotations_file_path, data_dir)
+
     # split dataset into train & dev
     train_set_size = int(len(dataset) * 0.8)
     valid_set_size = len(dataset) - train_set_size
-    train_set, valid_set = data.random_split(dataset, [train_set_size, valid_set_size])
+    train_set, valid_set = data.random_split(
+        dataset, [train_set_size, valid_set_size])
 
-    image_datasets = {'training': DatasetFromSubset(train_set,data_transforms['training'])
-        , 'development': DatasetFromSubset(valid_set,data_transforms['development'])}
-    
+    image_datasets = {'training': DatasetFromSubset(
+        train_set, data_transforms['training']), 'development': DatasetFromSubset(valid_set, data_transforms['development'])}
+
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                                shuffle=True, num_workers=4)
-                for x in ['training', 'development']}
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['training', 'development']}
-    class_names = [0,1,2,3,4,5]
+                                                  shuffle=True, num_workers=4)
+                   for x in ['training', 'development']}
+    dataset_sizes = {x: len(image_datasets[x])
+                     for x in ['training', 'development']}
+    class_names = [0, 1, 2, 3, 4, 5]
     # print(class_names)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")    
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     return dataset_sizes, device, class_names, dataloaders
+
 
 def imshow(class_names, dataloaders, inp, title=None):
     """Imshow for Tensor."""
@@ -71,6 +79,7 @@ def imshow(class_names, dataloaders, inp, title=None):
         plt.title(title)
     plt.pause(10)  # pause a bit so that plots are updated
     # Get a batch of training data
+
 
 def train_model(class_names, dataset_sizes, dataloaders, device, model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
@@ -94,7 +103,7 @@ def train_model(class_names, dataset_sizes, dataloaders, device, model, criterio
 
             # Iterate over data.
             for inputs, labels in dataloaders[phase]:
-                inputs = inputs.to(device)
+                inputs = inputs.to(device).repeat(1, 3, 1, 1) # convert grayscale image to have 3 channels
                 labels = labels.to(device)
 
                 # zero the parameter gradients
@@ -119,7 +128,7 @@ def train_model(class_names, dataset_sizes, dataloaders, device, model, criterio
                 scheduler.step()
 
             epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            epoch_acc = running_corrects / dataset_sizes[phase]
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
@@ -139,7 +148,9 @@ def train_model(class_names, dataset_sizes, dataloaders, device, model, criterio
     # load best model weights
     model.load_state_dict(best_model_wts)
     return model
-def visualize_model(inp, device, class_names, dataloaders ,model, num_images=6, title=None):
+
+
+def visualize_model(inp, device, class_names, dataloaders, model, num_images=6, title=None):
     was_training = model.training
     model.eval()
     images_so_far = 0
@@ -165,7 +176,8 @@ def visualize_model(inp, device, class_names, dataloaders ,model, num_images=6, 
                     return
         model.train(mode=was_training)
 
-def pretrain_model_train(class_names, dataset_sizes, dataloaders,device):
+
+def pretrain_model_train(class_names, dataset_sizes, dataloaders, device):
     model_ft = models.resnet18(pretrained=True)
     num_ftrs = model_ft.fc.in_features
     # Here the size of each output sample is set to 2.
@@ -180,22 +192,25 @@ def pretrain_model_train(class_names, dataset_sizes, dataloaders,device):
     optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 
     # Decay LR by a factor of 0.1 every 7 epochs
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
-    model_ft = train_model(class_names, dataset_sizes, dataloaders, device, model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+    exp_lr_scheduler = lr_scheduler.StepLR(
+        optimizer_ft, step_size=7, gamma=0.1)
+    model_ft = train_model(class_names, dataset_sizes, dataloaders, device,
+                           model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
     return model_ft
 
+
 def training():
-    dataset_sizes, device, class_names, dataloaders=load_image()
-    model_ft= pretrain_model_train(class_names, dataset_sizes, dataloaders,device)
+    dataset_sizes, device, class_names, dataloaders = load_image()
+    model_ft = pretrain_model_train(
+        class_names, dataset_sizes, dataloaders, device)
     torch.save(model_ft.state_dict(), '../model.pkl')
-    
+
     #inputs, classes = next(iter(dataloaders['training']))
     #out = torchvision.utils.make_grid(inputs)
-    
-    #visualize_model(out, device, class_names, dataloaders ,model_ft, num_images=6, title=[class_names[x] for x in classes])
-    #model=load_model()
-    #train_model(class_names, dataset_sizes, dataloaders, device, model, criterion, optimizer, scheduler, num_epochs=25)
 
+    #visualize_model(out, device, class_names, dataloaders ,model_ft, num_images=6, title=[class_names[x] for x in classes])
+    # model=load_model()
+    #train_model(class_names, dataset_sizes, dataloaders, device, model, criterion, optimizer, scheduler, num_epochs=25)
 
 
 if __name__ == '__main__':
