@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+from numpy.lib.npyio import load
 import pandas as pd
 import torch
 import math
@@ -14,7 +15,11 @@ import os
 import copy
 from torchvision.io import read_image
 plt.ion() 
-
+def load_model():
+    model = torch.hub.load('pytorch/vision:v0.6.0',
+                           'googlenet', pretrained=True)
+    model.eval()
+    return model
 def run_test():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")  
     data_transforms = {
@@ -27,7 +32,7 @@ def run_test():
         ]),
     }
     img_dir = "./aoi/test_images"
-    model = models.resnet18(pretrained=True)
+    model = load_model()
     num_ftrs = model.fc.in_features
     # Here the size of each output sample is set to 2.
     # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
